@@ -6,7 +6,6 @@ This folder contains filled, previewable resume templates.
 
 - `mustermann_resume_template.html`: recommended starter template with fictional Max Mustermann content.
 - `german_delta.css`: stylesheet used by the HTML template.
-- `german_delta_resume_template.html`: same German Delta layout, kept under a layout-oriented name.
 - `mustermann_resume_template.css`: copy of the stylesheet for easier discovery.
 - `portrait_placeholder.svg`: fictional neutral profile image used only for the public example templates.
 
@@ -18,7 +17,7 @@ Open:
 resume_templates/mustermann_resume_template.html
 ```
 
-Copy the file, replace the fictional name, contact details, skills, experience, and education with your own content, then select the edited HTML file as `Resume HTML` in the app.
+The easiest path is to open the desktop app and click `填写/编辑简历`. The app will load this template into an editor, so users do not need to edit HTML by hand.
 
 ## Difference From `templates/`
 

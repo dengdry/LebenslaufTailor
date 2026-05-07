@@ -49,8 +49,8 @@ start_gui.bat
 
 ## Schnellstart
 
-1. Kopiere `resume_templates/mustermann_resume_template.html` und ersetze die fiktiven Inhalte durch den eigenen Lebenslauf.
-2. Wähle die bearbeitete HTML-Datei bei `Resume HTML` aus.
+1. Klicke in der Desktop-App auf `填写/编辑简历`.
+2. Ersetze die fiktiven Max-Mustermann-Inhalte im Editor und speichere sie als `master_resume.html`.
 3. Füge die Stellenbeschreibung in das JD-Textfeld ein.
 4. Wähle einen LLM-Anbieter: `off`, `openai`, `deepseek` oder `ollama`.
 5. Klicke auf `1. Analyze`, um Matching-Scores zu erzeugen.
@@ -63,13 +63,13 @@ Die GUI enthält aktuell chinesische Labels, da das Projekt ursprünglich als lo
 
 ## Erste Nutzung Ohne Eigenen Lebenslauf
 
-Öffne die ausgefüllte Beispielvorlage:
+Die ausgefüllte Beispielvorlage ist:
 
 ```text
 resume_templates/mustermann_resume_template.html
 ```
 
-Kopiere sie, ersetze die fiktiven Max-Mustermann-Inhalte durch eigene Angaben und nutze die bearbeitete HTML-Datei anschließend in der App als `Resume HTML`.
+Die HTML-Datei muss nicht von Hand bearbeitet werden. Klicke in der App auf `填写/编辑简历`, um die Vorlage über eine formularähnliche Oberfläche zu bearbeiten.
 
 ## HTML Als Master Resume
 

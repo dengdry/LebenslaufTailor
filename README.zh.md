@@ -49,8 +49,8 @@ start_gui.bat
 
 ## 快速开始
 
-1. 复制 `resume_templates/mustermann_resume_template.html`，把里面的虚构内容改成自己的简历内容。
-2. 在 `Resume HTML` 中选择修改后的 HTML 简历。
+1. 在桌面软件里点击 `填写/编辑简历`。
+2. 在编辑窗口里把 Max Mustermann 的虚构内容改成自己的，并保存为 `master_resume.html`。
 3. 在 JD 文本框中粘贴岗位描述。
 4. 选择模型服务：`off`、`openai`、`deepseek` 或 `ollama`。
 5. 点击 `1. Analyze` 生成匹配评分。
@@ -63,13 +63,13 @@ start_gui.bat
 
 ## 没有简历时如何开始
 
-打开已经填好内容的示例模板：
+已经填好内容的示例模板是：
 
 ```text
 resume_templates/mustermann_resume_template.html
 ```
 
-复制一份，把里面的 Max Mustermann 示例内容替换成自己的信息，然后在软件中把这份 HTML 作为 `Resume HTML` 输入。
+用户不需要手动编辑 HTML 源码。打开软件后点击 `填写/编辑简历`，程序会用类似表单的界面读取这个模板并保存成自己的 Master Resume。
 
 ## HTML 作为 Master Resume
 

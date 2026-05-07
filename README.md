@@ -49,8 +49,8 @@ start_gui.bat
 
 ## Quick Start
 
-1. Copy `resume_templates/mustermann_resume_template.html` and replace the fictional content with your own resume content.
-2. Select the edited HTML file in `Resume HTML`.
+1. Click `填写/编辑简历` in the desktop app.
+2. Replace the fictional Max Mustermann content in the editor and save it as `master_resume.html`.
 3. Paste the job description into the JD text box.
 4. Choose an LLM provider: `off`, `openai`, `deepseek`, or `ollama`.
 5. Click `1. Analyze` to generate match scores.
@@ -63,13 +63,13 @@ The GUI currently contains Chinese labels because the project started as a local
 
 ## First-Time Users Without a Resume
 
-Open the filled example template:
+The filled example template is:
 
 ```text
 resume_templates/mustermann_resume_template.html
 ```
 
-Copy it, replace the fictional Max Mustermann content with your own information, and then use that edited HTML file as `Resume HTML` in the app.
+You do not need to edit this HTML file by hand. Click `填写/编辑简历` in the app to edit the template through a form-like interface.
 
 ## HTML as Master Resume
 

@@ -33,7 +33,7 @@ from resume_tailor.export.html_renderer import GermanDeltaHtmlRenderer
 from resume_tailor.export.pdf_exporter import count_pdf_pages, export_html_to_pdf
 from resume_tailor.language import detect_jd_language
 from resume_tailor.llm.factory import build_llm_client
-from resume_tailor.models import ResumeData
+from resume_tailor.models import Education, Experience, Language, ResumeData
 from resume_tailor.parsing.delta_resume_parser import preview_resume
 from resume_tailor.parsing.html_resume_parser import parse_html_resume
 from resume_tailor.rewriting.diff import build_resume_diff, format_diff_markdown, format_diff_text, write_diff_files
@@ -93,6 +93,9 @@ class GermanResumeApp:
             text="第一次使用：先复制并填写 resume_templates/mustermann_resume_template.html，然后在下方选择填写后的 HTML。",
             anchor="w",
         ).pack(side=LEFT, fill=X, expand=True)
+        Button(template_hint, text="填写/编辑简历", command=self.open_master_resume_editor, width=16).pack(
+            side=RIGHT, padx=(8, 0)
+        )
         Button(template_hint, text="打开模板文件夹", command=self._open_template_folder, width=16).pack(side=RIGHT)
         self._path_row(file_panel, "简历 HTML", self.resume_html_path, self._choose_resume_html)
         self._path_row(file_panel, "输出文件夹", self.output_dir, self._choose_output_dir)
@@ -185,6 +188,9 @@ class GermanResumeApp:
         template_dir = Path(__file__).resolve().parent / "resume_templates"
         os.startfile(template_dir)
 
+    def _default_template_html(self) -> Path:
+        return Path(__file__).resolve().parent / "resume_templates" / "mustermann_resume_template.html"
+
     def analyze_match(self) -> None:
         self._run_background(self._analyze_match)
 
@@ -198,69 +204,138 @@ class GermanResumeApp:
         if not self.last_original_resume or not self.last_tailored_resume:
             messagebox.showinfo("检查与编辑", "还没有可检查的修改结果。请先点击“生成简历”。")
             return
+        self._open_resume_editor(
+            title="检查与编辑",
+            subtitle="先查看修改对照，再按需编辑内容。保存后会重新生成 HTML。",
+            resume=self.last_tailored_resume,
+            diff_text=self.last_diff_text or "暂无修改对照。",
+            save_label="保存并重新生成 HTML",
+            on_save=self._apply_manual_resume,
+        )
 
+    def open_master_resume_editor(self) -> None:
+        html_value = self.resume_html_path.get().strip()
+        html_path = Path(html_value) if html_value else self._default_template_html()
+        if not html_path.exists():
+            messagebox.showerror("填写/编辑简历", f"找不到 HTML 模板: {html_path}")
+            return
+        resume = parse_html_resume(html_path)
+        source_photo = self._html_photo(html_path)
+
+        def save_master(edited: ResumeData) -> None:
+            out = self._output_dir() / "master_resume.html"
+            GermanDeltaHtmlRenderer(fallback_photo=source_photo).render(edited, out)
+            self.resume_html_path.set(str(out))
+            self.last_photo_path = source_photo
+            self._set_status(f"Master Resume 已保存: {out}")
+            messagebox.showinfo("填写/编辑简历", f"已保存为:\n{out}\n\n接下来粘贴 JD，然后点击“分析”或“生成简历”。")
+
+        self._open_resume_editor(
+            title="填写/编辑简历",
+            subtitle="第一次使用时，先把示例内容改成自己的。保存后会生成 master_resume.html，并自动填入“简历 HTML”。",
+            resume=resume,
+            diff_text=None,
+            save_label="保存为 Master Resume",
+            on_save=save_master,
+        )
+
+    def _open_resume_editor(
+        self,
+        title: str,
+        subtitle: str,
+        resume: ResumeData,
+        diff_text: str | None,
+        save_label: str,
+        on_save,
+    ) -> None:
         window = Toplevel(self.root)
-        window.title("检查与编辑")
+        window.title(title)
         window.geometry("1040x780")
         window.minsize(820, 580)
 
-        Label(window, text="检查与编辑", anchor="w", font=("Segoe UI", 12, "bold")).pack(
+        Label(window, text=title, anchor="w", font=("Segoe UI", 12, "bold")).pack(
             fill=X, padx=12, pady=(10, 4)
         )
-        Label(window, text="先查看修改对照，再按需编辑内容。保存后会重新生成 HTML。", anchor="w").pack(
-            fill=X, padx=12, pady=(0, 8)
-        )
+        Label(window, text=subtitle, anchor="w").pack(fill=X, padx=12, pady=(0, 8))
 
         notebook = Notebook(window)
         notebook.pack(fill=BOTH, expand=True, padx=12, pady=(0, 8))
 
-        diff_tab = Frame(notebook, padx=8, pady=8)
+        contact_tab = Frame(notebook, padx=8, pady=8)
         profile_tab = Frame(notebook, padx=8, pady=8)
         skills_tab = Frame(notebook, padx=8, pady=8)
+        languages_tab = Frame(notebook, padx=8, pady=8)
         experience_tab = Frame(notebook, padx=8, pady=8)
-        notebook.add(diff_tab, text="修改对照")
+        education_tab = Frame(notebook, padx=8, pady=8)
+        if diff_text is not None:
+            diff_tab = Frame(notebook, padx=8, pady=8)
+            notebook.add(diff_tab, text="修改对照")
         notebook.add(profile_tab, text="个人简介")
+        notebook.add(contact_tab, text="个人信息")
         notebook.add(skills_tab, text="技能")
+        notebook.add(languages_tab, text="语言")
         notebook.add(experience_tab, text="工作经历")
+        notebook.add(education_tab, text="教育")
 
-        diff_text = ScrolledText(diff_tab, wrap="word", undo=False)
-        diff_text.pack(fill=BOTH, expand=True)
-        diff_text.insert("1.0", self.last_diff_text or "暂无修改对照。")
-        diff_text.configure(state="disabled")
+        if diff_text is not None:
+            diff_widget = ScrolledText(diff_tab, wrap="word", undo=False)
+            diff_widget.pack(fill=BOTH, expand=True)
+            diff_widget.insert("1.0", diff_text)
+            diff_widget.configure(state="disabled")
+
+        Label(contact_tab, text="格式：名、姓、邮箱、电话、地址。", anchor="w").pack(fill=X, pady=(0, 6))
+        contact_text = ScrolledText(contact_tab, wrap="word", height=12, undo=True)
+        contact_text.pack(fill=BOTH, expand=True)
+        contact_text.insert("1.0", _format_contact_edit_text(resume))
 
         profile_text = ScrolledText(profile_tab, wrap="word", height=18, undo=True)
         profile_text.pack(fill=BOTH, expand=True)
-        profile_text.insert("1.0", self.last_tailored_resume.profile)
+        profile_text.insert("1.0", resume.profile)
 
         Label(skills_tab, text="每行一个技能。", anchor="w").pack(fill=X, pady=(0, 6))
         skills_text = ScrolledText(skills_tab, wrap="word", height=18, undo=True)
         skills_text.pack(fill=BOTH, expand=True)
-        skills_text.insert("1.0", "\n".join(self.last_tailored_resume.skills))
+        skills_text.insert("1.0", "\n".join(resume.skills))
+
+        Label(languages_tab, text="每行一种语言，格式：语言 | 水平。", anchor="w").pack(fill=X, pady=(0, 6))
+        languages_text = ScrolledText(languages_tab, wrap="word", height=18, undo=True)
+        languages_text.pack(fill=BOTH, expand=True)
+        languages_text.insert("1.0", _format_language_edit_text(resume))
 
         Label(
             experience_tab,
-            text="保留 ### 标题行；只编辑每段下面以 - 开头的经历要点。",
+            text="格式：### 序号. 职位 | 公司 | 时间 | 城市；下面每行一个以 - 开头的经历要点。",
             anchor="w",
         ).pack(fill=X, pady=(0, 6))
         experience_text = ScrolledText(experience_tab, wrap="word", height=18, undo=True)
         experience_text.pack(fill=BOTH, expand=True)
-        experience_text.insert("1.0", _format_experience_edit_text(self.last_tailored_resume))
+        experience_text.insert("1.0", _format_experience_edit_text(resume))
+
+        Label(education_tab, text="每行一段教育经历，格式：学位 | 学校 | 时间 | 备注。", anchor="w").pack(
+            fill=X, pady=(0, 6)
+        )
+        education_text = ScrolledText(education_tab, wrap="word", height=18, undo=True)
+        education_text.pack(fill=BOTH, expand=True)
+        education_text.insert("1.0", _format_education_edit_text(resume))
 
         button_bar = Frame(window)
         button_bar.pack(fill=X, padx=12, pady=(0, 12))
 
         def save_edits() -> None:
             try:
-                edited = deepcopy(self.last_tailored_resume)
+                edited = deepcopy(resume)
+                _apply_contact_edit_text(edited, contact_text.get("1.0", END))
                 edited.profile = profile_text.get("1.0", END).strip()
                 edited.skills = _clean_multiline_items(skills_text.get("1.0", END))
+                _apply_language_edit_text(edited, languages_text.get("1.0", END))
                 _apply_experience_edit_text(edited, experience_text.get("1.0", END))
-                self._apply_manual_resume(edited)
+                _apply_education_edit_text(edited, education_text.get("1.0", END))
+                on_save(edited)
                 window.destroy()
             except Exception as exc:
-                messagebox.showerror("检查与编辑", str(exc))
+                messagebox.showerror(title, str(exc))
 
-        Button(button_bar, text="保存并重新生成 HTML", command=save_edits, width=22).pack(side=LEFT, padx=(0, 8))
+        Button(button_bar, text=save_label, command=save_edits, width=22).pack(side=LEFT, padx=(0, 8))
         Button(button_bar, text="关闭", command=window.destroy, width=10).pack(side=LEFT)
 
     def open_html_preview(self) -> None:
@@ -415,6 +490,9 @@ class GermanResumeApp:
         html_path = Path(html_value)
         if not html_path.exists():
             return None
+        return self._html_photo(html_path)
+
+    def _html_photo(self, html_path: Path) -> Path | None:
         text = html_path.read_text(encoding="utf-8", errors="ignore")
         match = re.search(r'<img[^>]+class=["\'][^"\']*\bportrait\b[^"\']*["\'][^>]+src=["\']([^"\']+)["\']', text)
         if not match:
@@ -476,37 +554,112 @@ def _format_diff_view(diff, notes: list[str] | None = None) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def _format_contact_edit_text(resume: ResumeData) -> str:
+    return "\n".join(
+        [
+            f"Vorname: {resume.first_name}",
+            f"Nachname: {resume.last_name}",
+            f"E-Mail: {resume.email}",
+            f"Telefon: {resume.phone}",
+            f"Adresse: {resume.address}",
+        ]
+    )
+
+
+def _apply_contact_edit_text(resume: ResumeData, text: str) -> None:
+    values: dict[str, str] = {}
+    for raw_line in text.splitlines():
+        if ":" not in raw_line:
+            continue
+        key, value = raw_line.split(":", 1)
+        values[key.strip().lower()] = value.strip()
+    resume.first_name = values.get("vorname", resume.first_name)
+    resume.last_name = values.get("nachname", resume.last_name)
+    resume.email = values.get("e-mail", resume.email)
+    resume.phone = values.get("telefon", resume.phone)
+    resume.address = values.get("adresse", resume.address)
+
+
+def _format_language_edit_text(resume: ResumeData) -> str:
+    return "\n".join(f"{item.name} | {item.level}" for item in resume.languages)
+
+
+def _apply_language_edit_text(resume: ResumeData, text: str) -> None:
+    languages: list[Language] = []
+    for raw_line in text.splitlines():
+        line = raw_line.strip().lstrip("-").strip()
+        if not line:
+            continue
+        parts = [part.strip() for part in line.split("|")]
+        name = parts[0] if parts else ""
+        level = parts[1] if len(parts) > 1 else ""
+        if name:
+            languages.append(Language(name=name, level=level))
+    resume.languages = languages
+
+
 def _format_experience_edit_text(resume: ResumeData) -> str:
     lines: list[str] = []
     for index, item in enumerate(resume.experiences, start=1):
-        lines.append(f"### {index}. {item.title} | {item.company} | {item.period}")
+        lines.append(f"### {index}. {item.title} | {item.company} | {item.period} | {item.location}")
         lines.extend(f"- {bullet}" for bullet in item.bullets)
         lines.append("")
     return "\n".join(lines).strip() + "\n"
 
 
 def _apply_experience_edit_text(resume: ResumeData, text: str) -> None:
-    bullets_by_index: dict[int, list[str]] = {}
-    current_index: int | None = None
+    experiences: list[Experience] = []
+    current: Experience | None = None
     for raw_line in text.splitlines():
         line = raw_line.strip()
         if not line:
             continue
         if line.startswith("### "):
-            number_part = line[4:].split(".", 1)[0].strip()
-            current_index = int(number_part) - 1 if number_part.isdigit() else None
-            if current_index is not None:
-                bullets_by_index.setdefault(current_index, [])
+            header = line[4:]
+            if "." in header:
+                header = header.split(".", 1)[1].strip()
+            parts = [part.strip() for part in header.split("|")]
+            current = Experience(
+                title=parts[0] if len(parts) > 0 else "",
+                company=parts[1] if len(parts) > 1 else "",
+                period=parts[2] if len(parts) > 2 else "",
+                location=parts[3] if len(parts) > 3 else "",
+                bullets=[],
+            )
+            experiences.append(current)
             continue
-        if current_index is None:
+        if current is None:
             continue
         bullet = line[1:].strip() if line.startswith("-") else line
         if bullet:
-            bullets_by_index.setdefault(current_index, []).append(bullet)
+            current.bullets.append(bullet)
 
-    for index, bullets in bullets_by_index.items():
-        if 0 <= index < len(resume.experiences):
-            resume.experiences[index].bullets = bullets[:4]
+    if experiences:
+        resume.experiences = experiences
+
+
+def _format_education_edit_text(resume: ResumeData) -> str:
+    return "\n".join(
+        f"{item.degree} | {item.institution} | {item.period} | {item.details}" for item in resume.education
+    )
+
+
+def _apply_education_edit_text(resume: ResumeData, text: str) -> None:
+    education: list[Education] = []
+    for raw_line in text.splitlines():
+        line = raw_line.strip().lstrip("-").strip()
+        if not line:
+            continue
+        parts = [part.strip() for part in line.split("|")]
+        education.append(
+            Education(
+                degree=parts[0] if len(parts) > 0 else "",
+                institution=parts[1] if len(parts) > 1 else "",
+                period=parts[2] if len(parts) > 2 else "",
+                details=parts[3] if len(parts) > 3 else "",
+            )
+        )
+    resume.education = education
 
 
 def _clean_multiline_items(text: str) -> list[str]:
