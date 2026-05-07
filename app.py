@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 from resume_tailor.config import LLMSettings
@@ -201,7 +202,9 @@ def command_tailor_html(args: argparse.Namespace) -> None:
     language = detect_jd_language(jd_text)
     optimized = optimize_with_optional_llm(parsed_resume, jd_text, llm, language)
     resume = optimized.resume
-    GermanDeltaHtmlRenderer(template_docx=Path(args.template) if args.template else None, language=language).render(resume, out)
+    template = Path(args.template) if args.template else None
+    fallback_photo = _html_photo_from_args(args) if not template else None
+    GermanDeltaHtmlRenderer(template_docx=template, language=language, fallback_photo=fallback_photo).render(resume, out)
     diff = build_resume_diff(parsed_resume, resume)
     write_diff_files(diff, diff_json, diff_md)
 
@@ -220,7 +223,9 @@ def command_export_html(args: argparse.Namespace) -> None:
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     resume = _load_resume_from_args(args)
-    GermanDeltaHtmlRenderer(template_docx=Path(args.template) if args.template else None).render(resume, out)
+    template = Path(args.template) if args.template else None
+    fallback_photo = _html_photo_from_args(args) if not template else None
+    GermanDeltaHtmlRenderer(template_docx=template, fallback_photo=fallback_photo).render(resume, out)
     print(f"Generated {out}")
 
 
@@ -246,6 +251,26 @@ def _load_resume_from_args(args: argparse.Namespace) -> ResumeData:
     if not getattr(args, "resume", None):
         raise ValueError("Please provide --html or --resume.")
     return parse_delta_resume(Path(args.resume))
+
+
+def _html_photo_from_args(args: argparse.Namespace) -> Path | None:
+    html_path_value = getattr(args, "html", None)
+    if not html_path_value:
+        return None
+    html_path = Path(html_path_value)
+    if not html_path.exists():
+        return None
+    text = html_path.read_text(encoding="utf-8", errors="ignore")
+    match = re.search(r'<img[^>]+class=["\'][^"\']*\bportrait\b[^"\']*["\'][^>]+src=["\']([^"\']+)["\']', text)
+    if not match:
+        match = re.search(r'<img[^>]+src=["\']([^"\']+)["\'][^>]+class=["\'][^"\']*\bportrait\b[^"\']*["\']', text)
+    if not match:
+        return None
+    src = match.group(1)
+    if "://" in src or src.startswith("data:"):
+        return None
+    photo_path = (html_path.parent / src).resolve()
+    return photo_path if photo_path.exists() else None
 
 
 def _render_resume_docx(resume: ResumeData, template: Path | None, out: Path) -> None:

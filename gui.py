@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 import threading
 import os
+import re
 from pathlib import Path
 from tkinter import (
     BOTH,
@@ -74,6 +75,7 @@ class GermanResumeApp:
         self.last_original_resume: ResumeData | None = None
         self.last_tailored_resume: ResumeData | None = None
         self.last_template_path: Path | None = None
+        self.last_photo_path: Path | None = None
         self.last_rewrite_notes: list[str] = []
         self.last_jd = ""
         self.last_resume_language = "de"
@@ -304,7 +306,8 @@ class GermanResumeApp:
         llm = build_llm_client(settings)
         optimized = optimize_with_optional_llm(parsed_resume, jd, llm, language)
         resume = optimized.resume
-        GermanDeltaHtmlRenderer(template_docx=template, language=language).render(resume, out)
+        fallback_photo = self._source_html_photo() if not template else None
+        GermanDeltaHtmlRenderer(template_docx=template, language=language, fallback_photo=fallback_photo).render(resume, out)
         diff = build_resume_diff(parsed_resume, resume)
         write_diff_files(diff, diff_json, diff_md)
         self.last_diff_path = diff_md
@@ -322,6 +325,7 @@ class GermanResumeApp:
         self.last_original_resume = parsed_resume
         self.last_tailored_resume = resume
         self.last_template_path = template
+        self.last_photo_path = fallback_photo
         self.last_rewrite_notes = optimized.notes
         self.last_jd = jd
         self.last_resume_language = language
@@ -356,7 +360,11 @@ class GermanResumeApp:
         diff_md = out_dir / "rewrite_diff.md"
         notes = [*self.last_rewrite_notes, "已应用手动编辑。"]
 
-        GermanDeltaHtmlRenderer(template_docx=self.last_template_path, language=self.last_resume_language).render(resume, out)
+        GermanDeltaHtmlRenderer(
+            template_docx=self.last_template_path,
+            language=self.last_resume_language,
+            fallback_photo=self.last_photo_path,
+        ).render(resume, out)
         diff = build_resume_diff(self.last_original_resume, resume)
         write_diff_files(diff, diff_json, diff_md)
         self.last_diff_path = diff_md
@@ -420,6 +428,25 @@ class GermanResumeApp:
                 raise ValueError(f"简历 HTML 不存在: {html_path}")
             return parse_html_resume(html_path)
         return parse_delta_resume(self._require_resume_path())
+
+    def _source_html_photo(self) -> Path | None:
+        html_value = self.resume_html_path.get().strip()
+        if not html_value:
+            return None
+        html_path = Path(html_value)
+        if not html_path.exists():
+            return None
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+        match = re.search(r'<img[^>]+class=["\'][^"\']*\bportrait\b[^"\']*["\'][^>]+src=["\']([^"\']+)["\']', text)
+        if not match:
+            match = re.search(r'<img[^>]+src=["\']([^"\']+)["\'][^>]+class=["\'][^"\']*\bportrait\b[^"\']*["\']', text)
+        if not match:
+            return None
+        src = match.group(1)
+        if "://" in src or src.startswith("data:"):
+            return None
+        photo_path = (html_path.parent / src).resolve()
+        return photo_path if photo_path.exists() else None
 
     def _require_jd(self) -> str:
         jd = self.jd_text.get("1.0", END).strip()

@@ -14,9 +14,15 @@ TEMPLATE_DIR = Path(__file__).resolve().parents[2] / "templates"
 
 
 class GermanDeltaHtmlRenderer:
-    def __init__(self, template_docx: Path | None = None, language: str = "de") -> None:
+    def __init__(
+        self,
+        template_docx: Path | None = None,
+        language: str = "de",
+        fallback_photo: Path | None = None,
+    ) -> None:
         self.template_docx = template_docx
         self.language = language if language in {"de", "en"} else "de"
+        self.fallback_photo = fallback_photo
 
     def render(self, resume: ResumeData, out_path: Path) -> None:
         out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -46,13 +52,20 @@ class GermanDeltaHtmlRenderer:
         out_path.write_text(html_text, encoding="utf-8")
 
     def _photo_block(self, out_path: Path) -> str:
-        if not self.template_docx or not self.template_docx.exists():
-            return ""
-        photo_path = extract_first_image(self.template_docx, out_path.parent / "portrait.jpg")
-        if not photo_path:
+        if self.template_docx and self.template_docx.exists():
+            photo_path = extract_first_image(self.template_docx, out_path.parent / "portrait.jpg")
+            if not photo_path:
+                return ""
+            src = "portrait.jpg"
+        elif self.fallback_photo and self.fallback_photo.exists():
+            src = self.fallback_photo.name
+            target = out_path.parent / src
+            if self.fallback_photo.resolve() != target.resolve():
+                shutil.copyfile(self.fallback_photo, target)
+        else:
             return ""
         alt = "Application photo" if self.language == "en" else "Bewerbungsfoto"
-        return f'<img class="portrait" src="portrait.jpg" alt="{alt}" />'
+        return f'<img class="portrait" src="{_e(src)}" alt="{alt}" />'
 
 
 def _replace_many(template: str, values: dict[str, str]) -> str:
