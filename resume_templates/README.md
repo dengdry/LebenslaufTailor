@@ -6,7 +6,6 @@ This folder contains filled, previewable resume templates.
 
 - `mustermann_resume_template.html`: recommended starter template with fictional Max Mustermann content.
 - `german_delta.css`: stylesheet used by the HTML template.
-- `mustermann_resume_template.css`: copy of the stylesheet for easier discovery.
 - `portrait_placeholder.svg`: fictional neutral profile image used only for the public example templates.
 
 ## How to Use
