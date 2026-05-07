@@ -49,8 +49,8 @@ start_gui.bat
 
 ## 快速开始
 
-1. 如果已经有满意的 HTML 简历，在 `Resume HTML` 中选择它；否则在 `Resume DOCX` 中选择原始 `.docx` 简历。
-2. 可选：选择一个 DOCX 简历模板，用来复用头像。
+1. 复制 `resume_templates/mustermann_resume_template.html`，把里面的虚构内容改成自己的简历内容。
+2. 在 `Resume HTML` 中选择修改后的 HTML 简历。
 3. 在 JD 文本框中粘贴岗位描述。
 4. 选择模型服务：`off`、`openai`、`deepseek` 或 `ollama`。
 5. 点击 `1. Analyze` 生成匹配评分。
@@ -76,12 +76,10 @@ resume_templates/mustermann_resume_template.html
 推荐工作流：
 
 ```text
-DOCX -> 生成满意的 HTML 简历 -> 后续复用这份 HTML 作为 Master Resume -> 新 JD -> 新 HTML/PDF
+填写好的 HTML 简历 -> 新 JD -> 定制版 HTML/PDF
 ```
 
-如果同时选择了 `Resume HTML` 和 `Resume DOCX`，程序会优先读取 `Resume HTML`。
-
-当前只保证完整支持本工具生成的 HTML。任意外部 HTML 简历可能可以读取部分文本，但不保证完整结构化解析。
+GUI 现在刻意采用 HTML-first 流程。DOCX 解析能力仍保留在命令行里，但桌面端主流程围绕可编辑 HTML 模板设计。
 
 ## LLM 设置
 

@@ -49,8 +49,8 @@ start_gui.bat
 
 ## Schnellstart
 
-1. Wenn bereits ein guter HTML-Lebenslauf vorhanden ist, wähle ihn bei `Resume HTML` aus. Andernfalls wähle den ursprünglichen `.docx`-Lebenslauf bei `Resume DOCX`.
-2. Optional: wähle eine DOCX-Vorlage, wenn ein Foto daraus wiederverwendet werden soll.
+1. Kopiere `resume_templates/mustermann_resume_template.html` und ersetze die fiktiven Inhalte durch den eigenen Lebenslauf.
+2. Wähle die bearbeitete HTML-Datei bei `Resume HTML` aus.
 3. Füge die Stellenbeschreibung in das JD-Textfeld ein.
 4. Wähle einen LLM-Anbieter: `off`, `openai`, `deepseek` oder `ollama`.
 5. Klicke auf `1. Analyze`, um Matching-Scores zu erzeugen.
@@ -76,12 +76,10 @@ Kopiere sie, ersetze die fiktiven Max-Mustermann-Inhalte durch eigene Angaben un
 Empfohlener Workflow:
 
 ```text
-DOCX -> guten HTML-Lebenslauf erzeugen -> dieses HTML als Master Resume wiederverwenden -> neue JD -> neues HTML/PDF
+ausgefüllter HTML-Lebenslauf -> neue JD -> angepasstes HTML/PDF
 ```
 
-Wenn sowohl `Resume HTML` als auch `Resume DOCX` ausgewählt sind, nutzt die App vorrangig `Resume HTML`.
-
-Aktuell wird die vollständige strukturierte Analyse nur für HTML garantiert, das mit diesem Tool erzeugt wurde.
+Die GUI ist bewusst HTML-first. DOCX-Parsing bleibt in der CLI erhalten, aber der Desktop-Workflow ist auf editierbare HTML-Vorlagen ausgerichtet.
 
 ## LLM-Einstellungen
 

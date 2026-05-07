@@ -34,7 +34,7 @@ from resume_tailor.export.pdf_exporter import count_pdf_pages, export_html_to_pd
 from resume_tailor.language import detect_jd_language
 from resume_tailor.llm.factory import build_llm_client
 from resume_tailor.models import ResumeData
-from resume_tailor.parsing.delta_resume_parser import parse_delta_resume, preview_resume
+from resume_tailor.parsing.delta_resume_parser import preview_resume
 from resume_tailor.parsing.html_resume_parser import parse_html_resume
 from resume_tailor.rewriting.diff import build_resume_diff, format_diff_markdown, format_diff_text, write_diff_files
 from resume_tailor.rewriting.llm_optimizer import optimize_with_optional_llm
@@ -58,9 +58,7 @@ class GermanResumeApp:
         self.root.geometry("1120x760")
         self.root.minsize(980, 680)
 
-        self.resume_path = StringVar()
         self.resume_html_path = StringVar()
-        self.template_path = StringVar()
         self.output_dir = StringVar(value=str(Path.cwd() / "outputs"))
         env_settings = LLMSettings.load()
         self.llm_provider = StringVar(
@@ -74,7 +72,6 @@ class GermanResumeApp:
         self.last_diff_text = ""
         self.last_original_resume: ResumeData | None = None
         self.last_tailored_resume: ResumeData | None = None
-        self.last_template_path: Path | None = None
         self.last_photo_path: Path | None = None
         self.last_rewrite_notes: list[str] = []
         self.last_jd = ""
@@ -89,9 +86,15 @@ class GermanResumeApp:
 
         file_panel = LabelFrame(outer, text="文件", padx=10, pady=8)
         file_panel.pack(fill=X)
+        template_hint = Frame(file_panel)
+        template_hint.pack(fill=X, pady=(0, 6))
+        Label(
+            template_hint,
+            text="第一次使用：先复制并填写 resume_templates/mustermann_resume_template.html，然后在下方选择填写后的 HTML。",
+            anchor="w",
+        ).pack(side=LEFT, fill=X, expand=True)
+        Button(template_hint, text="打开模板文件夹", command=self._open_template_folder, width=16).pack(side=RIGHT)
         self._path_row(file_panel, "简历 HTML", self.resume_html_path, self._choose_resume_html)
-        self._path_row(file_panel, "简历 DOCX", self.resume_path, self._choose_resume)
-        self._path_row(file_panel, "简历模板", self.template_path, self._choose_template)
         self._path_row(file_panel, "输出文件夹", self.output_dir, self._choose_output_dir)
         self._llm_row(file_panel)
 
@@ -165,14 +168,6 @@ class GermanResumeApp:
         settings.save()
         self.status.set(f"模型设置已保存: {APP_CONFIG_FILE}")
 
-    def _choose_resume(self) -> None:
-        path = filedialog.askopenfilename(
-            title="选择简历 DOCX",
-            filetypes=[("Word 文档", "*.docx"), ("所有文件", "*.*")],
-        )
-        if path:
-            self.resume_path.set(path)
-
     def _choose_resume_html(self) -> None:
         path = filedialog.askopenfilename(
             title="选择简历 HTML",
@@ -181,18 +176,14 @@ class GermanResumeApp:
         if path:
             self.resume_html_path.set(path)
 
-    def _choose_template(self) -> None:
-        path = filedialog.askopenfilename(
-            title="选择简历模板 DOCX",
-            filetypes=[("Word 文档", "*.docx"), ("所有文件", "*.*")],
-        )
-        if path:
-            self.template_path.set(path)
-
     def _choose_output_dir(self) -> None:
         path = filedialog.askdirectory(title="选择输出文件夹")
         if path:
             self.output_dir.set(path)
+
+    def _open_template_folder(self) -> None:
+        template_dir = Path(__file__).resolve().parent / "resume_templates"
+        os.startfile(template_dir)
 
     def analyze_match(self) -> None:
         self._run_background(self._analyze_match)
@@ -298,7 +289,6 @@ class GermanResumeApp:
         report_out = out_dir / "tailored_match_report.md"
         diff_json = out_dir / "rewrite_diff.json"
         diff_md = out_dir / "rewrite_diff.md"
-        template = Path(self.template_path.get()) if self.template_path.get().strip() else None
         language = detect_jd_language(jd)
 
         parsed_resume = self._load_source_resume()
@@ -306,8 +296,8 @@ class GermanResumeApp:
         llm = build_llm_client(settings)
         optimized = optimize_with_optional_llm(parsed_resume, jd, llm, language)
         resume = optimized.resume
-        fallback_photo = self._source_html_photo() if not template else None
-        GermanDeltaHtmlRenderer(template_docx=template, language=language, fallback_photo=fallback_photo).render(resume, out)
+        fallback_photo = self._source_html_photo()
+        GermanDeltaHtmlRenderer(language=language, fallback_photo=fallback_photo).render(resume, out)
         diff = build_resume_diff(parsed_resume, resume)
         write_diff_files(diff, diff_json, diff_md)
         self.last_diff_path = diff_md
@@ -324,7 +314,6 @@ class GermanResumeApp:
         self.last_html_path = out
         self.last_original_resume = parsed_resume
         self.last_tailored_resume = resume
-        self.last_template_path = template
         self.last_photo_path = fallback_photo
         self.last_rewrite_notes = optimized.notes
         self.last_jd = jd
@@ -361,7 +350,6 @@ class GermanResumeApp:
         notes = [*self.last_rewrite_notes, "已应用手动编辑。"]
 
         GermanDeltaHtmlRenderer(
-            template_docx=self.last_template_path,
             language=self.last_resume_language,
             fallback_photo=self.last_photo_path,
         ).render(resume, out)
@@ -411,23 +399,14 @@ class GermanResumeApp:
         widget.delete("1.0", END)
         widget.insert("1.0", text)
 
-    def _require_resume_path(self) -> Path:
-        value = self.resume_path.get().strip()
-        if not value:
-            raise ValueError("请先选择简历 DOCX。")
-        path = Path(value)
-        if not path.exists():
-            raise ValueError(f"简历文件不存在: {path}")
-        return path
-
     def _load_source_resume(self) -> ResumeData:
         html_value = self.resume_html_path.get().strip()
-        if html_value:
-            html_path = Path(html_value)
-            if not html_path.exists():
-                raise ValueError(f"简历 HTML 不存在: {html_path}")
-            return parse_html_resume(html_path)
-        return parse_delta_resume(self._require_resume_path())
+        if not html_value:
+            raise ValueError("请先选择填写好的简历 HTML。第一次使用可从 resume_templates/mustermann_resume_template.html 复制一份再修改。")
+        html_path = Path(html_value)
+        if not html_path.exists():
+            raise ValueError(f"简历 HTML 不存在: {html_path}")
+        return parse_html_resume(html_path)
 
     def _source_html_photo(self) -> Path | None:
         html_value = self.resume_html_path.get().strip()
