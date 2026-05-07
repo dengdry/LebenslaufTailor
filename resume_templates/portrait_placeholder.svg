@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="420" viewBox="0 0 420 420" role="img" aria-label="Fictional profile photo placeholder">
+  <rect width="420" height="420" fill="#d9dee3"/>
+  <circle cx="210" cy="155" r="72" fill="#7d8790"/>
+  <path d="M82 360c18-78 72-122 128-122s110 44 128 122" fill="#7d8790"/>
+  <circle cx="210" cy="210" r="198" fill="none" stroke="#ffffff" stroke-width="16" opacity="0.55"/>
+</svg>

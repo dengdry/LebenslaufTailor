@@ -8,6 +8,7 @@ This folder contains filled, previewable resume templates.
 - `german_delta.css`: stylesheet used by the HTML template.
 - `german_delta_resume_template.html`: same German Delta layout, kept under a layout-oriented name.
 - `mustermann_resume_template.css`: copy of the stylesheet for easier discovery.
+- `portrait_placeholder.svg`: fictional neutral profile image used only for the public example templates.
 
 ## How to Use
 
