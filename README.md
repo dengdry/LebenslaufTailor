@@ -1,6 +1,6 @@
 # Resume Tailor Local
 
-[English](README.md) | [Deutsch](README.de.md)
+[English](README.md) | [Deutsch](README.de.md) | [中文](README.zh.md)
 
 Resume Tailor Local is a privacy-conscious desktop tool for tailoring resumes to job descriptions. It reads a resume, scores it against a pasted JD, optionally rewrites it with an LLM, and exports a tailored HTML resume and PDF.
 

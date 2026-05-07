@@ -1,6 +1,6 @@
 # Resume Tailor Local
 
-[English](README.md) | [Deutsch](README.de.md)
+[English](README.md) | [Deutsch](README.de.md) | [中文](README.zh.md)
 
 Resume Tailor Local ist ein datenschutzbewusstes Desktop-Tool zur Anpassung von Lebensläufen an Stellenanzeigen. Es liest einen Lebenslauf, bewertet ihn gegen eine eingefügte Stellenbeschreibung, kann ihn optional mit einem LLM umformulieren und exportiert einen angepassten HTML-Lebenslauf sowie ein PDF.
 
