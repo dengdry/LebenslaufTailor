@@ -27,74 +27,75 @@ def build_sample_resume() -> ResumeData:
         phone="+49 170 0000000",
         address="Musterstr. 1, 10115 Berlin",
         profile=(
-            "Elektroingenieur mit Erfahrung in BMS-Software, Batteriesystemen und "
-            "der Analyse technischer Systemdaten. Schwerpunkt auf Software- und "
-            "Systemtest, technischer Dokumentation sowie Python-basierten "
-            "Auswertungsworkflows im Umfeld Batterie, Wasserstoff und Mobilität."
+            "Softwareentwickler mit Erfahrung in Webanwendungen, API-Entwicklung "
+            "und datengetriebenen internen Tools. Schwerpunkt auf Python, "
+            "TypeScript, automatisierten Tests und klarer technischer "
+            "Dokumentation in agilen Produktteams."
         ),
         skills=[
-            "BMS / Batteriesysteme",
-            "Software- und Systemtest",
-            "Testplanung und Testdokumentation",
-            "Batterie- und Ladetechnik",
-            "Fehleranalyse",
-            "Anforderungsabstimmung",
             "Python",
-            "Automatisierte Datenauswertung",
-            "Elektromobilität",
+            "TypeScript",
+            "FastAPI",
+            "React",
+            "PostgreSQL",
+            "REST APIs",
+            "Docker",
+            "CI/CD",
+            "Automatisierte Tests",
+            "Technische Dokumentation",
         ],
         languages=[
             Language("Deutsch", "Fließend"),
             Language("Englisch", "Fließend"),
-            Language("Chinesisch", "Muttersprache"),
+            Language("Spanisch", "Grundkenntnisse"),
         ],
         experiences=[
             Experience(
-                title="Wissenschaftlicher Mitarbeiter",
-                company="Beispieluniversität",
-                period="09/2023 - 12/2025",
-                location="Freiburg",
+                title="Softwareentwickler",
+                company="MusterTech GmbH",
+                period="04/2022 - 12/2025",
+                location="Berlin",
                 bullets=[
-                    "Entwicklung von LCA- und Szenariomodellen für Batterie-, Wasserstoff- und Energiesysteme.",
-                    "Dokumentation der Ergebnisse und Aufbereitung als Entscheidungsgrundlage für Projektpartner.",
-                    "Entwicklung automatisierter Bewertungsworkflows mit Python und KI-gestützten Ansätzen.",
-                    "Aufbereitung technischer Analysen als Grundlage für Projektentscheidungen.",
+                    "Entwicklung interner Webanwendungen mit Python, FastAPI und React.",
+                    "Konzeption und Implementierung von REST APIs für Reporting- und Workflow-Tools.",
+                    "Aufbau automatisierter Tests und CI/CD-Pipelines zur stabileren Auslieferung.",
+                    "Abstimmung technischer Anforderungen mit Produktmanagement, Design und Fachbereichen.",
                 ],
             ),
             Experience(
-                title="Entwicklungsingenieur für BMS-Software",
-                company="Beispiel Automotive",
-                period="01/2022 - 04/2023",
-                location="Guangdong, China",
+                title="Junior Softwareentwickler",
+                company="Beispiel Software Solutions",
+                period="07/2019 - 03/2022",
+                location="Hamburg",
                 bullets=[
-                    "Mitarbeit an der Entwicklung von BMS-Software für Batteriesysteme in Elektrofahrzeugen.",
-                    "Analyse von Fahrzeug- und Batterieverhalten unter verschiedenen Betriebsbedingungen.",
-                    "Abstimmung technischer Anforderungen mit Software-, Batterie- und Fahrzeugentwicklung.",
-                    "Unterstützung bei der Bewertung technischer Rückmeldungen im Batterieumfeld.",
+                    "Umsetzung neuer Funktionen in einer SaaS-Anwendung für B2B-Kunden.",
+                    "Optimierung von SQL-Abfragen und Datenmodellen für operative Dashboards.",
+                    "Bearbeitung von Bugs, Code Reviews und technischer Dokumentation im Scrum-Team.",
+                    "Unterstützung bei der Migration einzelner Services in containerisierte Umgebungen.",
                 ],
             ),
             Experience(
-                title="Ingenieur für Elektrofahrzeuge",
-                company="Beispiel R&D Center",
-                period="12/2018 - 12/2021",
-                location="Guangdong, China",
+                title="Werkstudent Softwareentwicklung",
+                company="Demo Digital Lab",
+                period="10/2017 - 06/2019",
+                location="München",
                 bullets=[
-                    "Technologie-Benchmarking von Fahrzeugmodellen, Steuerungsstrategien und Leistungsparametern.",
-                    "Ableitung technischer Empfehlungen für neue Fahrzeugmodelle.",
+                    "Entwicklung kleiner Automatisierungsskripte für Datenaufbereitung und Reporting.",
+                    "Pflege interner Dokumentation und Unterstützung des Entwicklungsteams bei Tests.",
                 ],
             ),
         ],
         education=[
             Education(
-                degree="M.Sc. Elektrotechnik",
-                institution="Technische Universität Musterstadt",
-                period="2015 - 2018",
-                details="Note: 1,9 | Masterarbeit: 1,0",
+                degree="M.Sc. Informatik",
+                institution="Technische Universität Berlin",
+                period="2017 - 2019",
+                details="Schwerpunkt: Software Engineering und Datenbanken",
             ),
             Education(
-                degree="B.Sc. Elektrotechnik",
-                institution="Beispieluniversität Wuhan",
-                period="2010 - 2014",
+                degree="B.Sc. Informatik",
+                institution="Hochschule Musterstadt",
+                period="2013 - 2017",
             ),
         ],
     )

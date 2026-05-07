@@ -1,11 +1,11 @@
-Sustainability Market Engagement Manager
+Senior Software Engineer
 
 Responsibilities:
-- Structure sustainability-related customer and stakeholder expectations.
-- Develop response processes across Sustainability, Sales, Product, Supply Chain and Legal.
-- Translate market signals into actionable strategic insights.
-- Facilitate cross-functional alignment in a global organization.
+- Build and maintain backend services and internal web applications.
+- Design REST APIs and data models for product and operations teams.
+- Improve automated tests, CI/CD pipelines and deployment workflows.
+- Collaborate with product managers, designers and stakeholders.
 
 Qualifications:
-- Experience in sustainability, strategy or market engagement.
-- Strong communication, stakeholder engagement and analytical skills.
+- Experience with Python, TypeScript, React, REST APIs and SQL databases.
+- Strong communication, documentation and problem-solving skills.
